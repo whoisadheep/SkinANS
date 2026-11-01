@@ -12,7 +12,7 @@ function Login({ onNavigate, onLogin }) {
     event.preventDefault();
 
     if (!username || !password) {
-      setError("Please enter your User ID and password.");
+      setError("Please enter your User ID or Email, and password.");
       return;
     }
 
@@ -92,16 +92,16 @@ localStorage.setItem("skinans_token", data.access_token);
         {/* FORM */}
         <form onSubmit={handleLogin}>
 
-          {/* USERNAME */}
+          {/* USERNAME OR EMAIL */}
           <div className="login-input-group">
 
             <label>
-              User ID
+              User ID or Email
             </label>
 
             <input
               type="text"
-              placeholder="Enter your User ID"
+              placeholder="Enter your User ID or registered email"
               value={username}
               onChange={(event) =>
                 setUsername(event.target.value)

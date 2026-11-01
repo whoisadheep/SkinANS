@@ -240,9 +240,16 @@ def verify_otp(data: VerifyOTPRequest):
 @router.post("/login")
 def login_user(data: LoginRequest):
 
-    # Find user
+    login_identifier = (data.username or "").strip()
+
+    # Find user by EITHER username OR email
     user = users_collection.find_one({
-        "username": data.username
+        "$or": [
+            {"username": login_identifier},
+            {"username": login_identifier.lower()},
+            {"email": login_identifier.lower()},
+            {"email": login_identifier}
+        ]
     })
 
     if not user:
