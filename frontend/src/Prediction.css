@@ -618,6 +618,41 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
+.switch-cam-btn {
+  background: rgba(56, 189, 248, 0.2);
+  color: #e0f2fe;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.switch-cam-btn:hover {
+  background: rgba(56, 189, 248, 0.35);
+  color: #ffffff;
+}
+
+.webcam-loading-indicator {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.85);
+  color: #38bdf8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  z-index: 5;
+  backdrop-filter: blur(4px);
+  animation: pulseTarget 1.5s infinite ease-in-out;
+}
+
 .webcam-hint {
   position: relative;
   z-index: 3;

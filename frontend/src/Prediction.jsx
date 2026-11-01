@@ -20,6 +20,8 @@ function Prediction({ onNavigate , onResult }) {
   // Live Webcam state
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [webcamError, setWebcamError] = useState("");
+  const [isCameraStreaming, setIsCameraStreaming] = useState(false);
+  const [facingMode, setFacingMode] = useState("user");
 
   const symptomList = [
     "Itching",
@@ -32,6 +34,32 @@ function Prediction({ onNavigate , onResult }) {
     "Rash",
   ];
 
+  // Callback ref to reliably attach stream the exact instant <video> mounts into DOM
+  const setVideoRef = (element) => {
+    videoRef.current = element;
+    if (element && mediaStreamRef.current) {
+      if (element.srcObject !== mediaStreamRef.current) {
+        element.srcObject = mediaStreamRef.current;
+      }
+      element.muted = true;
+      element.setAttribute("playsinline", "true");
+      element.play().catch((err) => console.log("Video direct play error:", err));
+    }
+  };
+
+  // Re-sync video element whenever isWebcamActive changes
+  useEffect(() => {
+    if (isWebcamActive && videoRef.current && mediaStreamRef.current) {
+      const video = videoRef.current;
+      if (video.srcObject !== mediaStreamRef.current) {
+        video.srcObject = mediaStreamRef.current;
+      }
+      video.muted = true;
+      video.setAttribute("playsinline", "true");
+      video.play().catch((e) => console.log("Video effect play error:", e));
+    }
+  }, [isWebcamActive]);
+
   // Stop camera stream on unmount
   useEffect(() => {
     return () => {
@@ -41,42 +69,60 @@ function Prediction({ onNavigate , onResult }) {
     };
   }, []);
 
-  const startWebcam = async () => {
+  const startWebcam = async (desiredFacingMode = facingMode) => {
     setError("");
     setWebcamError("");
+    setIsCameraStreaming(false);
+
+    // Stop existing stream if any
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      });
-      mediaStreamRef.current = stream;
-      setIsWebcamActive(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-    } catch (err) {
-      console.error("Camera access error:", err);
+      let stream = null;
+      // 1. First attempt: standard user/environment camera
       try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: desiredFacingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
+      } catch (modeErr) {
+        console.warn("Specific facingMode failed, falling back to basic video constraint:", modeErr);
+        // 2. Universal fallback: works on all laptops, USB cams, and browsers
+        stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false,
         });
-        mediaStreamRef.current = fallbackStream;
-        setIsWebcamActive(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = fallbackStream;
-          videoRef.current.play();
-        }
-      } catch (fallbackErr) {
-        console.error("Fallback camera error:", fallbackErr);
-        setWebcamError("Camera access was denied or no camera device was detected.");
       }
+
+      mediaStreamRef.current = stream;
+      setIsWebcamActive(true);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.muted = true;
+        videoRef.current.setAttribute("playsinline", "true");
+        videoRef.current.play().catch((err) => console.log("Play failed:", err));
+      }
+    } catch (err) {
+      console.error("Camera access error:", err);
+      setIsWebcamActive(false);
+      setWebcamError(
+        "Could not access camera. Please allow camera permissions in your browser, or ensure no other app (Zoom, Teams, Skype) is using the camera."
+      );
     }
+  };
+
+  const switchCamera = () => {
+    const nextMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(nextMode);
+    startWebcam(nextMode);
   };
 
   const stopWebcam = () => {
@@ -85,6 +131,7 @@ function Prediction({ onNavigate , onResult }) {
       mediaStreamRef.current = null;
     }
     setIsWebcamActive(false);
+    setIsCameraStreaming(false);
     setWebcamError("");
   };
 
@@ -378,12 +425,22 @@ onResult({
             {isWebcamActive ? (
               <div className="webcam-viewport">
                 <video
-                  ref={videoRef}
+                  ref={setVideoRef}
                   autoPlay
                   playsInline
                   muted
+                  onLoadedMetadata={(e) => {
+                    e.target.play().catch(() => {});
+                  }}
+                  onPlaying={() => setIsCameraStreaming(true)}
                   className="webcam-live-video"
                 />
+
+                {!isCameraStreaming && (
+                  <div className="webcam-loading-indicator">
+                    <span>📷 Initializing camera feed...</span>
+                  </div>
+                )}
 
                 {/* TARGETING RETICLE OVERLAY */}
                 <div className="reticle-overlay">
@@ -410,6 +467,14 @@ onResult({
                   </button>
                   <button
                     type="button"
+                    className="switch-cam-btn"
+                    onClick={switchCamera}
+                    title="Flip camera"
+                  >
+                    🔄 Flip Camera
+                  </button>
+                  <button
+                    type="button"
                     className="cancel-cam-btn"
                     onClick={stopWebcam}
                   >
@@ -418,7 +483,7 @@ onResult({
                 </div>
 
                 <small className="webcam-hint">
-                  💡 Ensure good ambient lighting and hold steady 10-15 cm away.
+                  💡 Ensure good lighting. If screen is black, check if your laptop has a physical privacy slider / shutter switch closed.
                 </small>
               </div>
             ) : (
