@@ -480,6 +480,11 @@
   height: 100%;
   object-fit: cover;
   z-index: 1;
+  transition: transform 0.25s ease;
+}
+
+.webcam-live-video.mirrored {
+  transform: scaleX(-1);
 }
 
 .reticle-overlay {
@@ -634,6 +639,29 @@
 .switch-cam-btn:hover {
   background: rgba(56, 189, 248, 0.35);
   color: #ffffff;
+}
+
+.mirror-toggle-btn {
+  background: rgba(168, 85, 247, 0.2);
+  color: #f3e8ff;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.mirror-toggle-btn:hover {
+  background: rgba(168, 85, 247, 0.35);
+  color: #ffffff;
+}
+
+.mirror-toggle-btn.active {
+  background: rgba(168, 85, 247, 0.4);
+  border-color: #c084fc;
 }
 
 .webcam-loading-indicator {

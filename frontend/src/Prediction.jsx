@@ -22,6 +22,7 @@ function Prediction({ onNavigate , onResult }) {
   const [webcamError, setWebcamError] = useState("");
   const [isCameraStreaming, setIsCameraStreaming] = useState(false);
   const [facingMode, setFacingMode] = useState("user");
+  const [isMirrored, setIsMirrored] = useState(true);
 
   const symptomList = [
     "Itching",
@@ -142,6 +143,12 @@ function Prediction({ onNavigate , onResult }) {
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext("2d");
+
+    // Mirror image horizontally if mirror mode is enabled so captured picture matches viewfinder
+    if (isMirrored) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob(
@@ -433,7 +440,7 @@ onResult({
                     e.target.play().catch(() => {});
                   }}
                   onPlaying={() => setIsCameraStreaming(true)}
-                  className="webcam-live-video"
+                  className={`webcam-live-video ${isMirrored ? "mirrored" : ""}`}
                 />
 
                 {!isCameraStreaming && (
@@ -464,6 +471,14 @@ onResult({
                     onClick={capturePhoto}
                   >
                     📸 Capture Lesion Photo
+                  </button>
+                  <button
+                    type="button"
+                    className={`mirror-toggle-btn ${isMirrored ? "active" : ""}`}
+                    onClick={() => setIsMirrored((prev) => !prev)}
+                    title="Toggle mirror view (selfie reflection)"
+                  >
+                    {isMirrored ? "🪞 Mirror: ON" : "🪞 Mirror: OFF"}
                   </button>
                   <button
                     type="button"
