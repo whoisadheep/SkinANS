@@ -1,0 +1,498 @@
+.result-page-header h1 {
+  font-size: clamp(32px, 4vw, 48px);
+  margin-top: 8px;
+}
+
+.result-page-header p {
+  margin-top: 8px;
+  max-width: 560px;
+}
+
+.completed-badge {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--ok-bg);
+  color: var(--ok);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.result-overview {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.result-image-wrapper,
+.no-image {
+  height: 280px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+.no-image {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.image-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.diagnosis-section h2 {
+  font-size: clamp(32px, 4vw, 46px);
+  margin: 8px 0 10px;
+}
+
+.confidence-card {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.confidence-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.confidence-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #e6ebf4;
+  margin: 12px 0 8px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2454e6, #0f9f8f);
+}
+
+.confidence-card small,
+.medical-disclaimer {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.result-card,
+.care-card {
+  margin-top: 16px;
+  padding: 22px;
+}
+
+.prediction-list {
+  margin-top: 4px;
+}
+
+.prediction-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.prediction-name strong {
+  overflow-wrap: anywhere;
+}
+
+.prediction-name span {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.primary-prediction {
+  background: var(--primary-soft);
+  border-radius: 14px;
+  padding: 12px;
+  border-top: 0;
+  margin-top: 8px;
+}
+
+.primary-prediction strong {
+  font-size: 16px;
+}
+
+.symptom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.symptom-tags span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.tone-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+.tone-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.16);
+}
+
+.care-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: start;
+}
+
+.care-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  font-size: 22px;
+}
+
+.home-care {
+  background: #fff;
+}
+
+.doctor-care {
+  background: #f8fbff;
+}
+
+.care-card ul {
+  margin-top: 12px;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.additional-result {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.secondary-result-btn,
+.primary-result-btn,
+.doctor-result-btn {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.secondary-result-btn {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.secondary-result-btn:hover {
+  border-color: #c9d3e4;
+  background: #f8fafc;
+}
+
+.medical-disclaimer {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #9a4d12;
+  border: 1px solid #fed7aa;
+}
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.risk-badge.urgent {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.risk-badge.moderate {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.risk-badge.low {
+  background: #ecfdf3;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.ai-engine-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f0f4ff;
+  color: #1e40af;
+  border: 1px solid #dbeafe;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.raw-disease-tag {
+  display: inline-block;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  font-family: monospace;
+  background: var(--bg-2);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.insight-text {
+  margin-top: 10px;
+  line-height: 1.6;
+  font-size: 14px;
+  color: #334155;
+  background: var(--bg);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border-left: 3px solid var(--primary);
+}
+
+.red-flags-card {
+  background: #fff5f5;
+  border: 1.5px solid #feb2b2;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);
+}
+
+.red-flags-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #991b1b;
+  margin-bottom: 12px;
+}
+
+.red-flags-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #991b1b;
+}
+
+.red-flags-list {
+  padding-left: 24px;
+  display: grid;
+  gap: 8px;
+  color: #7f1d1d;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .result-overview,
+  .care-card {
+    grid-template-columns: 1fr;
+  }
+
+  .result-page-header {
+    align-items: flex-start;
+  }
+
+  .result-actions > button {
+    flex: 1 1 160px;
+  }
+}
+
+@media (max-width: 560px) {
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions > button {
+    width: 100%;
+  }
+
+  .result-image-wrapper,
+  .no-image {
+    height: 220px;
+  }
+}
+
+
+@media print {
+  .result-sidebar,
+  .result-actions,
+  .result-page-header .completed-badge {
+    display: none !important;
+  }
+
+  .result-page {
+    grid-template-columns: 1fr !important;
+    background: #fff !important;
+  }
+
+  .result-main {
+    padding: 0 !important;
+  }
+
+  .result-card,
+  .care-card,
+  .red-flags-card,
+  .diagnosis-section,
+  .result-overview {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    break-inside: avoid;
+  }
+}
+
+
+/* ==========================================================================
+   GRAD-CAM EXPLAINABLE AI HEATMAP CONTROLS & VISUALIZATION
+   ========================================================================== */
+
+.gradcam-toggle-container {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.gradcam-pill-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border: 1px solid var(--line);
+  padding: 4px;
+  border-radius: 999px;
+  gap: 4px;
+}
+
+.gradcam-pill-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gradcam-pill-btn:hover {
+  color: var(--text);
+}
+
+.gradcam-pill-btn.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(36, 84, 230, 0.28);
+}
+
+.gradcam-explanation-box {
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.gradcam-spectrum-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.spectrum-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.gradcam-spectrum-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.gradcam-explanation-box p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.gradcam-active-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0.5; transform: scale(0.99); }
+  to { opacity: 1; transform: scale(1); }
+}
