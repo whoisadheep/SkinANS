@@ -155,11 +155,21 @@ def get_model_specs():
         "explainability_engine": "Grad-CAM (Gradient-Weighted Class Activation Mapping)",
         "gradcam_target_layer": "out_relu (Final 7x7x1280 Conv activation of MobileNetV2)",
         "colormap": "OpenCV COLORMAP_JET",
+        "inference_optimizations": [
+            "Aspect-Ratio Preserving Center ROI Extraction (Lanczos-4)",
+            "3-View Test-Time Augmentation (Standard, Horizontal Flip, 8% Micro-Zoom)",
+            "Logit Temperature Calibration (T = 0.68)",
+            "Multi-Modal Bayesian Clinical Prior Fusion"
+        ],
         "classes": CLASS_NAMES,
         "viva_insights": [
             {
                 "question": "Why did you choose MobileNetV2 over heavier models like ResNet-50 or VGG-16?",
                 "answer": "ResNet-50 has ~25.6M parameters and VGG-16 has ~138M parameters. MobileNetV2 has only 2.29M parameters (~90% reduction) using Depthwise Separable Convolutions. It achieves comparable classification accuracy while running at ~45ms latency on standard CPUs, making it ideal for edge telehealth clinics."
+            },
+            {
+                "question": "How did you optimize confidence scores and multi-class calibration?",
+                "answer": "We implemented Test-Time Augmentation (TTA) with 3 ensembled spatial views (standard, horizontal flip, and 8% micro-zoom) to cancel sensor noise, paired with Logit Temperature Scaling (T = 0.68) to sharpen winning class probabilities while preserving true relative ranking across the 23 DermNet categories."
             },
             {
                 "question": "What is the mathematical formulation of Grad-CAM?",
