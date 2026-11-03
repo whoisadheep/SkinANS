@@ -33,6 +33,8 @@ function Prediction({ onNavigate , onResult }) {
     "Dryness",
     "Flaking",
     "Rash",
+    "Pimples / Acne",
+    "Dark Spot / Mole",
   ];
 
   // Callback ref to reliably attach stream the exact instant <video> mounts into DOM

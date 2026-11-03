@@ -137,12 +137,40 @@ def extract_dermoscopic_features(bgr_image: np.ndarray) -> Dict[str, float]:
     }
 
 
+# Clinical Outpatient Teledermatology Base Rates
+EPIDEMIOLOGICAL_BASE_RATES: Dict[str, float] = {
+    "Acne and Rosacea Photos": 3.6,
+    "Atopic Dermatitis Photos": 3.2,
+    "Eczema Photos": 3.0,
+    "Tinea Ringworm Candidiasis and other Fungal Infections": 2.6,
+    "Psoriasis pictures Lichen Planus and related diseases": 2.2,
+    "Poison Ivy Photos and other Contact Dermatitis": 2.0,
+    "Melanoma Skin Cancer Nevi and Moles": 1.8,
+    "Seborrheic Keratoses and other Benign Tumors": 1.5,
+    "Warts Molluscum and other Viral Infections": 1.4,
+    "Urticaria Hives": 1.3,
+    "Scabies Lyme Disease and other Infestations and Bites": 1.1,
+    "Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions": 0.9,
+    "Hair Loss Photos Alopecia and other Hair Diseases": 0.7,
+    "Nail Fungus and other Nail Disease": 0.7,
+    "Light Diseases and Disorders of Pigmentation": 0.7,
+    "Herpes HPV and other STDs Photos": 0.5,
+    "Cellulitis Impetigo and other Bacterial Infections": 0.4,
+    "Exanthems and Drug Eruptions": 0.3,
+    "Bullous Disease Photos": 0.15,
+    "Vasculitis Photos": 0.08,
+    "Systemic Disease": 0.08,
+    "Lupus and other Connective Tissue diseases": 0.08,
+    "Vascular Tumors": 0.08,
+}
+
+
 def compute_clinical_prior(features: Dict[str, float], symptoms: Optional[List[str]] = None, skin_tone: Optional[int] = None) -> np.ndarray:
     """
     Calculates Bayesian clinical likelihood multipliers based on extracted physical features,
     reported patient symptoms, and Fitzpatrick skin phototype.
     """
-    prior = np.ones(len(CLASS_NAMES), dtype=np.float32)
+    prior = np.array([EPIDEMIOLOGICAL_BASE_RATES.get(c, 1.0) for c in CLASS_NAMES], dtype=np.float32)
     symptom_str = " ".join(symptoms or []).lower()
     
     erythema = features.get("erythema", 0.0)
@@ -151,48 +179,80 @@ def compute_clinical_prior(features: Dict[str, float], symptoms: Optional[List[s
     texture = features.get("texture", 0.0)
     focal_spots = features.get("focal_spots", 0)
 
-    for i, c_name in enumerate(CLASS_NAMES):
-        cn = c_name.lower()
+    # 1. PIGMENT GATE: Require focal dark pigment before predicting melanocytic lesions
+    if dark_ratio < 0.04:
+        # No dark spot present -> suppress melanoma and pigmented keratoses
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["melanoma", "nevi and moles", "seborrheic keratoses"]):
+                prior[i] *= 0.10
+    elif dark_ratio > 0.08:
+        # Distinct dark focal lesion detected
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["melanoma", "nevi and moles", "seborrheic keratoses", "actinic keratosis"]):
+                prior[i] *= (2.0 + min(6.0, dark_ratio * 16.0))
 
-        # A. High Erythema / Redness -> Inflammatory, Vascular, or Eczematous
-        if erythema > 12.0:
-            if any(k in cn for k in ["acne and rosacea", "atopic dermatitis", "eczema", "cellulitis", "urticaria", "poison ivy", "vasculitis"]):
-                prior[i] *= (1.0 + min(4.5, erythema / 7.5))
-            elif any(k in cn for k in ["melanoma", "nail fungus", "hair loss"]):
-                prior[i] *= 0.30
+    # 2. ERYTHEMA / REDNESS GATE
+    if erythema > 10.0:
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["atopic dermatitis", "eczema", "poison ivy", "urticaria"]):
+                prior[i] *= (2.2 + min(4.5, erythema / 5.0))
+            if "acne and rosacea" in cn and focal_spots >= 2:
+                prior[i] *= 3.5
+    else:
+        # Low erythema -> suppress acute inflammatory and destructive vascular conditions
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["vasculitis", "cellulitis", "bullous", "urticaria"]):
+                prior[i] *= 0.15
 
-        # B. Dark Pigmentation / Melanin -> Melanoma, Nevi, Benign Keratoses
-        if dark_ratio > 0.12 or melanin > 125.0:
-            if any(k in cn for k in ["melanoma", "nevi and moles", "seborrheic keratoses", "actinic keratosis", "pigmentation"]):
-                prior[i] *= (1.0 + min(5.0, dark_ratio * 4.5))
-            elif any(k in cn for k in ["acne and rosacea", "urticaria"]):
-                prior[i] *= 0.40
-
-        # C. Rough Texture / Scaling -> Psoriasis, Eczema, Actinic Keratosis, Tinea
-        if texture > 320.0:
-            if any(k in cn for k in ["psoriasis", "lichen planus", "eczema", "tinea", "actinic keratosis"]):
-                prior[i] *= 2.0
-
-        # D. Clustered Focal Spots (Pustules/Papules) -> Acne, Rosacea, Warts
-        if focal_spots > 6 and erythema > 10.0:
+    # 3. FOCAL SPOTS / BLEMISHES / COMEDONES -> ACNE & ROSACEA
+    if focal_spots >= 3 or any(w in symptom_str for w in ["acne", "pimple", "spot", "bump"]):
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
             if "acne and rosacea" in cn:
-                prior[i] *= 2.8
+                prior[i] *= (3.5 + min(5.0, focal_spots * 0.5))
             elif any(k in cn for k in ["warts", "herpes"]):
-                prior[i] *= 1.6
-
-        # E. Patient Reported Symptoms Integration
-        if "itching" in symptom_str:
-            if any(k in cn for k in ["eczema", "atopic dermatitis", "scabies", "urticaria", "psoriasis", "poison ivy"]):
-                prior[i] *= 2.5
-        if "pain" in symptom_str or "blisters" in symptom_str:
-            if any(k in cn for k in ["bullous", "herpes", "cellulitis", "vasculitis"]):
-                prior[i] *= 2.4
-        if "flaking" in symptom_str or "dryness" in symptom_str:
-            if any(k in cn for k in ["psoriasis", "atopic dermatitis", "eczema", "seborrheic", "tinea"]):
-                prior[i] *= 2.0
-        if "rash" in symptom_str:
-            if any(k in cn for k in ["exanthems", "urticaria", "atopic", "eczema", "poison ivy"]):
                 prior[i] *= 1.8
+
+    # 4. TEXTURE / SCALING GATE
+    if texture > 300.0 or any(w in symptom_str for w in ["flaking", "dryness", "scale"]):
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["psoriasis", "tinea", "lichen planus", "actinic keratosis"]):
+                prior[i] *= 2.6
+    elif texture < 180.0 and erythema < 10.0 and dark_ratio < 0.04:
+        # Smooth / clear skin profile -> prioritize mild benign conditions (Acne & Rosacea) over severe pathology
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["vasculitis", "systemic disease", "lupus", "bullous", "cellulitis"]):
+                prior[i] *= 0.10
+            elif "acne and rosacea" in cn:
+                prior[i] *= 2.2
+
+    # 5. PATIENT REPORTED SYMPTOM CORRELATIONS
+    if "itching" in symptom_str:
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["eczema", "atopic dermatitis", "tinea", "scabies", "urticaria", "poison ivy"]):
+                prior[i] *= 3.0
+    if "pain" in symptom_str or "blisters" in symptom_str:
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["bullous", "herpes", "cellulitis"]):
+                prior[i] *= 2.5
+    if "rash" in symptom_str:
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["atopic dermatitis", "eczema", "exanthems", "poison ivy", "urticaria"]):
+                prior[i] *= 2.2
+    if any(w in symptom_str for w in ["mole", "dark spot", "melanoma"]):
+        for i, c_name in enumerate(CLASS_NAMES):
+            cn = c_name.lower()
+            if any(k in cn for k in ["melanoma", "nevi and moles"]):
+                prior[i] *= 4.0
 
     return prior
 
